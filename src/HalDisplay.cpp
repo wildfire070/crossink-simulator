@@ -537,6 +537,23 @@ void HalDisplay::returnFrameBufferStorage() {
   frameBufferLent = false;
 }
 
+// The simulator's framebuffer is a static array, not a heap allocation, so
+// there is nothing to actually free here. Reuse the same lent-flag
+// lendFrameBufferStorage()/returnFrameBufferStorage() already use so
+// getFrameBuffer() reports "unavailable" while released the same way real
+// hardware does, keeping app-level release/network/realloc call sites
+// behaviorally consistent between device and simulator builds.
+void HalDisplay::releaseFrameBuffersToHeap() { frameBufferLent = true; }
+
+bool HalDisplay::reallocFrameBuffers() {
+  if (!frameBufferLent) {
+    return true;
+  }
+  frameBufferStorage.fill(0xFF);
+  frameBufferLent = false;
+  return true;  // never fails on the simulator: nothing was actually freed
+}
+
 void HalDisplay::copyGrayscaleBuffers(const uint8_t *lsbBuffer,
                                       const uint8_t *msbBuffer) {
   copyGrayscaleLsbBuffers(lsbBuffer);

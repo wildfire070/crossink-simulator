@@ -58,6 +58,12 @@ public:
   uint8_t *lendFrameBufferStorage(uint32_t *sizeOut);
   void returnFrameBufferStorage();
 
+  // Release the framebuffer for a network call, and reallocate it after.
+  // See HalDisplay.cpp for why this is a no-op wrapper around the same
+  // lent-flag lendFrameBufferStorage() uses on the simulator.
+  void releaseFrameBuffersToHeap();
+  bool reallocFrameBuffers();
+
   // Runtime geometry passthrough
   uint16_t getDisplayWidth() const;
   uint16_t getDisplayHeight() const;
