@@ -55,3 +55,14 @@ inline int xQueuePeek(SemaphoreHandle_t sem, void *, uint32_t) {
   }
   return pdFALSE;
 }
+
+// SimMutex is already recursive; the *Recursive variants share its implementation.
+inline SemaphoreHandle_t xSemaphoreCreateRecursiveMutex() {
+  return xSemaphoreCreateMutex();
+}
+inline bool xSemaphoreTakeRecursive(SemaphoreHandle_t sem, uint32_t ticks) {
+  return xSemaphoreTake(sem, ticks);
+}
+inline bool xSemaphoreGiveRecursive(SemaphoreHandle_t sem) {
+  return xSemaphoreGive(sem);
+}

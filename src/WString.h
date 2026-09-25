@@ -17,6 +17,8 @@ public:
   std::string s;
   String() {}
   String(const char *str) : s(str ? str : "") {}
+  String(const char *str, size_t len)
+      : s(str ? std::string(str, len) : std::string()) {}
   explicit String(const std::string &str) : s(str) {}
   String(uint16_t num) : s(std::to_string(num)) {}
 
