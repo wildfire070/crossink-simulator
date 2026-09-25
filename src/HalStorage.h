@@ -19,6 +19,9 @@ public:
   HalStorage();
   bool begin();
   bool ready() const;
+  // No-op: the simulator's storage backend is POSIX fds with nothing to
+  // power down before a simulated deep sleep.
+  void shutdown();
   std::vector<String> listFiles(const char *path = "/", int maxFiles = 200);
   // Read the entire file at `path` into a String. Returns empty string on
   // failure.
@@ -91,6 +94,7 @@ public:
   size_t size();
   size_t fileSize();
   uint64_t fileSize64();
+  uint32_t modificationTime();
   bool seek(size_t pos);
   bool seek64(uint64_t pos);
   bool seekCur(int64_t offset);

@@ -6,6 +6,8 @@
 #include "HalDisplay.h"
 #include "HalGPIO.h"
 #include "SimulatorLifecycle.h"
+#include "SimulatorStackCheck.h"
+#include "esp_heap_caps.h"
 
 extern void setup();
 extern void loop();
@@ -13,6 +15,7 @@ extern HalDisplay display; // defined in main.cpp
 
 int main(int argc, char **argv) {
   SimulatorLifecycle::initProcessArgs(argv);
+  simStackCheckStartup();
   setup();
   while (!display.shouldQuit()) {
     // Clear input edge latches once per frame. update() may be called many
@@ -39,5 +42,6 @@ int main(int argc, char **argv) {
   // thread is mid-render, the destructor races with the thread → SIGABRT/
   // SIGSEGV → "quit unexpectedly" dialog.  SDL is already torn down above, so
   // calling _exit(0) here is safe.
+  simulator_heap::reportFinal();
   _exit(0);
 }
