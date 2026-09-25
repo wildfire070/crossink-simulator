@@ -253,6 +253,12 @@ public:
     (void)passive;
     (void)max_ms_per_chan;
     (void)channel;
+    // Like the ESP32 core: an async scan reports "running" and scanComplete() then
+    // returns the network count (immediately, here). Callers treat any other start
+    // result as a failure to start.
+    if (async) {
+      return -1;  // WIFI_SCAN_RUNNING
+    }
     return static_cast<int>(configuredNetworks().size());
   }
   int scanComplete() { return static_cast<int>(configuredNetworks().size()); }
