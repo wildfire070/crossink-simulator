@@ -170,16 +170,14 @@ size_t HalFile::size() {
 }
 size_t HalFile::fileSize() { return size(); }
 uint64_t HalFile::fileSize64() { return size(); }
-uint32_t HalFile::modificationTime() {
-  if (!impl || impl->fd < 0)
-    return 0;
-  struct stat metadata{};
+namespace {
+// Pack a host timestamp the way HalFile does on device: FAT date/time with
+// two-second precision. Returns 0 for anything FAT cannot represent.
+uint32_t packFatTimestamp(const time_t seconds) {
   struct tm modified{};
-  if (fstat(impl->fd, &metadata) != 0 ||
-      !localtime_r(&metadata.st_mtime, &modified) || modified.tm_year < 80 ||
+  if (!localtime_r(&seconds, &modified) || modified.tm_year < 80 ||
       modified.tm_year > 207)
     return 0;
-  // Match HalFile's packed FAT date/time, including its two-second precision.
   const uint32_t date =
       static_cast<uint32_t>(((modified.tm_year - 80) << 9) |
                             ((modified.tm_mon + 1) << 5) | modified.tm_mday);
@@ -187,6 +185,31 @@ uint32_t HalFile::modificationTime() {
       static_cast<uint32_t>((modified.tm_hour << 11) | (modified.tm_min << 5) |
                             (modified.tm_sec / 2));
   return (date << 16) | time;
+}
+} // namespace
+
+uint32_t HalFile::modificationTime() {
+  if (!impl || impl->fd < 0)
+    return 0;
+  struct stat metadata{};
+  if (fstat(impl->fd, &metadata) != 0)
+    return 0;
+  return packFatTimestamp(metadata.st_mtime);
+}
+
+// FAT creation time. macOS keeps a real birth time; other hosts do not expose
+// one through stat(), so they fall back to the modification time.
+uint32_t HalFile::creationTime() {
+  if (!impl || impl->fd < 0)
+    return 0;
+  struct stat metadata{};
+  if (fstat(impl->fd, &metadata) != 0)
+    return 0;
+#ifdef __APPLE__
+  return packFatTimestamp(metadata.st_birthtime);
+#else
+  return packFatTimestamp(metadata.st_mtime);
+#endif
 }
 
 bool HalFile::seek(size_t pos) {

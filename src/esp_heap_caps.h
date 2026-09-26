@@ -290,6 +290,11 @@ inline size_t heap_caps_get_total_size(const uint32_t caps) {
   std::lock_guard<std::mutex> lock(simulator_heap::mutex);
   return simulator_heap::capabilityPoolFor(caps).total;
 }
+inline size_t heap_caps_get_minimum_free_size(const uint32_t caps) {
+  simulator_heap::initialize();
+  std::lock_guard<std::mutex> lock(simulator_heap::mutex);
+  return simulator_heap::capabilityPoolFor(caps).minimumFree;
+}
 inline size_t heap_caps_get_free_size(const uint32_t caps) {
   simulator_heap::initialize();
   std::lock_guard<std::mutex> lock(simulator_heap::mutex);

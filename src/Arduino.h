@@ -1,4 +1,11 @@
 #pragma once
+
+// Arduino-ESP32 sizes the loop task through this macro; the simulator runs the
+// loop on the host's main thread, so there is nothing to size.
+#ifndef SET_LOOP_TASK_STACK_SIZE
+#define SET_LOOP_TASK_STACK_SIZE(size)
+#endif
+
 #include <cassert>
 #include <chrono>
 #include <cmath>
